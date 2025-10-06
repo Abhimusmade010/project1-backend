@@ -26,7 +26,7 @@ const appendToSheet = async ({ complaintId,natureOfComplaint, department, roomNo
       values: [[
         complaintId,                   // unique ID for the complaint
         natureOfComplaint,             // Nature of Complaint
-        new Date().toLocaleString(),   // Complaint received on
+        new Date().toLocaleDateString(),   // Complaint received on
         "",                            // Complaint attended on (admin fills)
         "",                            // Complaint resolved on (admin fills)
         "Pending",                     // Remark
