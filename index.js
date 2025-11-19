@@ -5,7 +5,8 @@ const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 const path = require("path");
 const userRouter = require("./routes/userRoutes");
-const adminRouter = require("./routes/adminRoutes"); // Create this file for admin routes
+const adminRouter = require("./routes/adminRoutes"); 
+
 
 dotenv.config();
 const app = express();
@@ -36,13 +37,7 @@ app.use(session({
   }
 }))
 
-// Rate limiting middleware
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  message: "Too many requests from this IP, please try again after 15 minutes."
-});
-app.use(limiter);
+
 
 app.use("/user", userRouter);
 app.use("/admin", adminRouter);
