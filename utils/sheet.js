@@ -7,13 +7,13 @@ const auth = new google.auth.GoogleAuth({
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
-const appendToSheet = async ({ complaintId,natureOfComplaint, department, roomNo,emailId}) => {
+const appendToSheet = async ({ complaintId,natureOfComplaint, department, roomNo,emailId,dsrNo}) => {
   try{const client = await auth.getClient();
   const sheets = google.sheets({ version: "v4", auth: client });
   
 
   const spreadsheetId = process.env.SPREADSHEET_ID || "1Ma-YVQXEiO8TyJiBh6sCQUSSMkSEN-o_K4wBn-wbK7E";
-  const range = "Sheet1!A:K"; // 11 columns
+  const range = "Sheet1!A:L"; // 11 columns
   // const complaintId= uuid(); // Generate a unique ID for the complaint
 
   // Append the complaint data to the Google Sheet
@@ -34,13 +34,14 @@ const appendToSheet = async ({ complaintId,natureOfComplaint, department, roomNo
         department,                    // Department
         roomNo,
         emailId,                       // Room No
-        ""                             //Name of Technician (admin fills)
-    
+        "",                             //Name of Technician (admin fills)
+        dsrNo
       ]],
     },
   });
   return response.data;
-}catch (error) {
+}
+catch (error) {
     console.error(" Error appending to Google Sheet:", error);
     
     if (error.code === 403) {
@@ -50,10 +51,8 @@ const appendToSheet = async ({ complaintId,natureOfComplaint, department, roomNo
     if (error.code === 404) {
       throw new Error("Google Sheet not found. Check spreadsheet ID.");
     }
-    
     throw error;
   }
- 
 };
 
 // Function to get all complaints from the sheet
@@ -63,7 +62,7 @@ const getAllComplaints = async () => {
     const sheets = google.sheets({ version: "v4", auth: client });
 
     const spreadsheetId = process.env.SPREADSHEET_ID || "1Ma-YVQXEiO8TyJiBh6sCQUSSMkSEN-o_K4wBn-wbK7E";
-    const range = "Sheet1!A:K";
+    const range = "Sheet1!A:L";
 
     const result = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -86,7 +85,9 @@ const getAllComplaints = async () => {
       department: row[7] || "",
       roomNo: row[8] || "",
       emailId: row[9] || "",
-      technician: row[10] || ""
+      technician: row[10] || "",
+      dsrNo: row[11] || ""
+
     }));
   } catch (error) {
     console.error("Error fetching complaints:", error);
