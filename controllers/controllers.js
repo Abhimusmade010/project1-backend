@@ -1,14 +1,14 @@
 const { sendEmail, sendStatusUpdateEmail } = require("../utils/nodemailer");
 const { appendToSheet, getAllComplaints, updateComplaintStatus } = require("../utils/sheet");
-const {v4: uuid} = require("uuid");
+// const {v4: uuid} = require("uuid");
 const { getDashboardStats } = require("../utils/stats");
+
 
 const submitForm = async (req, res) => {
   try {
 
     const { natureOfComplaint, department, roomNo, emailId,dsrNo} =req.body;
 
-    const complaintId=uuid();
 
     await appendToSheet({complaintId,natureOfComplaint, department, roomNo, emailId,dsrNo});
         await sendEmail({ complaintId,emailId,department,natureOfComplaint,roomNo,dsrNo});
