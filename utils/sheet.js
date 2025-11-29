@@ -22,10 +22,10 @@ const appendToSheet = async ({ complaintId,natureOfComplaint, department, roomNo
     spreadsheetId,
     range,
     valueInputOption: "USER_ENTERED",
-    requestBody: {
+    requestBody:{
       values: [[
-        complaintId,                   // unique ID for the complaint
-        natureOfComplaint,             // Nature of Complaint
+        complaintId,                    // unique ID for the complaint
+        natureOfComplaint,              // Nature of Complaint
         new Date().toLocaleDateString(),   // Complaint received on
         "",                            // Complaint attended on (admin fills)
         "",                            // Complaint resolved on (admin fills)
@@ -35,6 +35,7 @@ const appendToSheet = async ({ complaintId,natureOfComplaint, department, roomNo
         roomNo,
         emailId,                       // Room No
         ""                             //Name of Technician (admin fills)
+    
       ]],
     },
   });

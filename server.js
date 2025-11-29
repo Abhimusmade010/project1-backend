@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const rateLimit = require("express-rate-limit");
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT ;
 const app = require("./index");
 
 app.set('trust proxy', 1);
