@@ -6,12 +6,12 @@ const { getDashboardStats } = require("../utils/stats");
 const submitForm = async (req, res) => {
   try {
 
-    const { natureOfComplaint, department, roomNo, emailId } =req.body;
+    const { natureOfComplaint, department, roomNo, emailId,dsrNo} =req.body;
 
     const complaintId=uuid();
 
-    await appendToSheet({complaintId,natureOfComplaint, department, roomNo, emailId});
-        await sendEmail({ complaintId,emailId,department,natureOfComplaint,roomNo});
+    await appendToSheet({complaintId,natureOfComplaint, department, roomNo, emailId,dsrNo});
+        await sendEmail({ complaintId,emailId,department,natureOfComplaint,roomNo,dsrNo});
     
     res.status(200).json({ 
       success: true,
@@ -20,7 +20,8 @@ const submitForm = async (req, res) => {
         complaintId,
         department,
         roomNo,
-        submittedAt: new Date().toISOString()
+        submittedAt: new Date().toISOString(),
+        dsrNo
       }
     });
     
