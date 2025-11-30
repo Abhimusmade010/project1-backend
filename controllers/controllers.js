@@ -7,24 +7,24 @@ const { getDashboardStats } = require("../utils/stats");
 const submitForm = async (req, res) => {
   try {
 
-    const { natureOfComplaint, department, roomNo, emailId} =req.body;
+    const { natureOfComplaint, department, roomNo, emailId,dsrNo} =req.body;
 
     const allComplaints = await getAllComplaints();
     
     let complaintId;
 
     if (allComplaints.length === 0) {
-      complaintId = "C1";            
+      complaintId = "PICT-MNTC-1";            
     } else {
       const lastComplaint = allComplaints[allComplaints.length - 1];
       const lastId = lastComplaint.complaintId; // ex: "C7"
-      const lastNum = parseInt(lastId.replace("C", ""), 10);
-      complaintId = `C${lastNum + 1}`; // ex: C8
+      const lastNum = parseInt(lastId.replace("PICT-MNTC-", ""), 10);
+      complaintId = `PICT-MNTC-${lastNum + 1}`; // ex: C8
     }
 
 
 
-    await appendToSheet({complaintId,natureOfComplaint, department, roomNo, emailId});
+    await appendToSheet({complaintId,natureOfComplaint, department, roomNo, emailId,dsrNo});
         await sendEmail({ complaintId,emailId,department,natureOfComplaint,roomNo});
     
     res.status(200).json({ 
@@ -34,7 +34,8 @@ const submitForm = async (req, res) => {
         complaintId,
         department,
         roomNo,
-        submittedAt: new Date().toISOString()
+        submittedAt: new Date().toISOString(),
+        dsrNo
       }
     });
     
