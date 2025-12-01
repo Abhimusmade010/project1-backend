@@ -2,12 +2,22 @@ const { sendEmail, sendStatusUpdateEmail } = require("../utils/nodemailer");
 const { appendToSheet, getAllComplaints, updateComplaintStatus } = require("../utils/sheet");
 // const {v4: uuid} = require("uuid");
 const { getDashboardStats } = require("../utils/stats");
+const {uploadToCloudinary} =require("../services/uploadService")
 
 
 const submitForm = async (req, res) => {
+
   try {
 
     const { natureOfComplaint, department, roomNo, emailId,dsrNo} =req.body;
+    
+    let imageUrl = null;
+
+    if (req.file) {
+      imageUrl = await uploadToCloudinary(req.file.buffer);
+    }
+
+    console.log(imageUrl)
 
     const allComplaints = await getAllComplaints();
     
@@ -24,8 +34,8 @@ const submitForm = async (req, res) => {
 
 
 
-    await appendToSheet({complaintId,natureOfComplaint, department, roomNo, emailId,dsrNo});
-        await sendEmail({ complaintId,emailId,department,natureOfComplaint,roomNo});
+    await appendToSheet({complaintId,natureOfComplaint, department, roomNo, emailId,dsrNo,imageUrl});
+        await sendEmail({ complaintId,emailId,department,natureOfComplaint,roomNo,imageUrl});
     
     res.status(200).json({ 
       success: true,
@@ -35,7 +45,8 @@ const submitForm = async (req, res) => {
         department,
         roomNo,
         submittedAt: new Date().toISOString(),
-        dsrNo
+        dsrNo,
+        imageUrl
       }
     });
     

@@ -7,13 +7,13 @@ const auth = new google.auth.GoogleAuth({
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
-const appendToSheet = async ({ complaintId,natureOfComplaint, department, roomNo,emailId,dsrNo}) => {
+const appendToSheet = async ({ complaintId,natureOfComplaint, department, roomNo,emailId,dsrNo,imageUrl}) => {
   try{const client = await auth.getClient();
   const sheets = google.sheets({ version: "v4", auth: client });
   
 
   const spreadsheetId = process.env.SPREADSHEET_ID || "1Ma-YVQXEiO8TyJiBh6sCQUSSMkSEN-o_K4wBn-wbK7E";
-  const range = "Sheet1!A:L"; // 11 columns
+  const range = "Sheet1!A:M"; // 13 columns
   // const complaintId= uuid(); // Generate a unique ID for the complaint
 
   // Append the complaint data to the Google Sheet
@@ -35,7 +35,8 @@ const appendToSheet = async ({ complaintId,natureOfComplaint, department, roomNo
         roomNo,
         emailId,                       // Room No
         "",                             //Name of Technician (admin fills)
-        dsrNo
+        dsrNo,
+        imageUrl
       ]],
     },
   });
@@ -62,7 +63,7 @@ const getAllComplaints = async () => {
     const sheets = google.sheets({ version: "v4", auth: client });
 
     const spreadsheetId = process.env.SPREADSHEET_ID || "1Ma-YVQXEiO8TyJiBh6sCQUSSMkSEN-o_K4wBn-wbK7E";
-    const range = "Sheet1!A:L";
+    const range = "Sheet1!A:M";
 
     const result = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -86,7 +87,8 @@ const getAllComplaints = async () => {
       roomNo: row[8] || "",
       emailId: row[9] || "",
       technician: row[10] || "",
-      dsrNo: row[11] || ""
+      dsrNo: row[11] || "",
+      imageUrl: row[12] || ""
 
     }));
   } catch (error) {
