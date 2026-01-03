@@ -1,4 +1,4 @@
-const { sendEmail, sendStatusUpdateEmail } = require("../utils/nodemailer");
+const { sendEmail, sendStatusUpdateEmail ,sendStatusToTechinician} = require("../utils/nodemailer");
 const { appendToSheet, getAllComplaints, updateComplaintStatus } = require("../utils/sheet");
 // const {v4: uuid} = require("uuid");
 const { getDashboardStats } = require("../utils/stats");
@@ -212,6 +212,7 @@ const getAllComplaintsForAdmin = async (req, res) => {
   }
 };
 
+
 // Update complaint status
 const updateComplaintStatusController = async (req, res) => {
   try {
@@ -249,7 +250,7 @@ const updateComplaintStatusController = async (req, res) => {
     }
 
     // Update the complaint in the sheet
-    await updateComplaintStatus(rowIndex, status, attendedOn, resolvedOn, technician);
+    await updateComplaintStatus(rowIndex, status, attendedOn, resolvedOn);
 
     // Send email notification to the complainant
     try {
@@ -264,6 +265,16 @@ const updateComplaintStatusController = async (req, res) => {
         technician: technician || '',
         updatedAt: updatedAt
       });
+
+      await sendStatusToTechinician({
+        emailId: complaint.emailId,
+        complaintId: complaint.complaintId,
+        department: complaint.department,
+        natureOfComplaint: complaint.natureOfComplaint,
+        roomNo: complaint.roomNo,
+        technician:technician
+      });
+      
     } catch (emailError) {
       console.error("Failed to send status update email:", emailError);
       // Don't fail the entire request if email fails

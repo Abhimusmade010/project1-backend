@@ -43,14 +43,14 @@ app.get("/api", (req, res) => {
 });
 
 // Root endpoint - serve the frontend
-if (process.env.NODE_ENV === "production") {
-  const buildPath = path.join(__dirname, "../Frontend", "build");
-  app.use(express.static(buildPath));
+// if (process.env.NODE_ENV === "production") {
+//   const buildPath = path.join(__dirname, "../Frontend", "build");
+//   app.use(express.static(buildPath));
 
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(buildPath, "index.html"));
-  });
-}
+//   app.get("*", (req, res) => {
+//     res.sendFile(path.join(buildPath, "index.html"));
+//   });
+// }
 
 
 app.listen(PORT, () => {

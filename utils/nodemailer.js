@@ -104,4 +104,44 @@ const sendStatusUpdateEmail = async ({ emailId, complaintId, department, natureO
   }
 };
 
-module.exports = { sendEmail, sendStatusUpdateEmail };
+
+//optionall
+
+const sendStatusToTechinician=async({emailId, complaintId, department, natureOfComplaint, roomNo,technician})=>{
+  try{
+    const transporter=nodemailer.createTransport({
+      service:'gmail',
+      auth:{
+        user:process.env.EMAIL_USER,
+        pass:process.env.EMAIL_PASS,
+      },
+    });
+    await transporter.sendMail({
+      from: `"Hardware Management System" <${process.env.EMAIL_USER}>`,
+      to: technician,
+      subject: `New Complaint Assigned | ID: ${complaintId}`,
+
+
+      text: `
+        New Complaint Assigned
+
+        Complaint ID: ${complaintId}
+        User Email: ${emailId}
+        Department: ${department}
+        Room No: ${roomNo}
+        Nature of Complaint: ${natureOfComplaint}
+
+        Please take necessary action.
+        `,
+    })
+  }catch(error){
+    console.error("Status update email sending failed:", error);
+    throw error;
+  }
+} 
+
+
+
+
+
+module.exports = { sendEmail, sendStatusUpdateEmail ,sendStatusToTechinician};
