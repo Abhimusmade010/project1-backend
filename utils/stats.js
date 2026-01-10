@@ -1,10 +1,20 @@
 const { google } = require("googleapis");
 const path = require("path");
 
+// const auth = new google.auth.GoogleAuth({
+//   keyFile: path.join(__dirname, "credentials.json"),
+//   scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+// });
+
 const auth = new google.auth.GoogleAuth({
-  keyFile: path.join(__dirname, "credentials.json"),
-  scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+  credentials: {
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+  },
+  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
+
+
 
 const getDashboardStats = async () => {
   try {
