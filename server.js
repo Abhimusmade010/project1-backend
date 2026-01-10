@@ -6,17 +6,7 @@ const app = require("./index");
 
 app.set('trust proxy', 1);
 
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,     // 15 minutes
-  max: 100,                     // limit each IP to 100 requests per windowMs
-  message: {
-    success: false,
-    message: "Too many requests from this IP, please try again later."
-  }
-});
 
-// Apply to all API routes  limits everything 
-app.use(apiLimiter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -40,6 +30,18 @@ app.get("/api", (req, res) => {
     }
   });
 });
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,     // 15 minutes
+  max: 100,                     // limit each IP to 100 requests per windowMs
+  message: {
+    success: false,
+    message: "Too many requests from this IP, please try again later."
+  }
+});
+
+// Apply to all API routes  limits everything 
+app.use(apiLimiter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
