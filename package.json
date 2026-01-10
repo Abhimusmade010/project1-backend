@@ -5,12 +5,8 @@
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
-    "install": "cd Frontend && npm install && cd ..",
-    "build": "cd Frontend && npm run build",
     "start": "node server.js",
-    "server": "nodemon server.js",
-    "client": "npm start --prefix Frontend",
-    "client-install": "npm install --prefix Frontend"
+    "server": "nodemon server.js"
   },
   "keywords": [
     "hardware",
