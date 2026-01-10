@@ -31,7 +31,7 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production',          // Use secure cookies in production
     httpOnly: true,                                         // Prevent XSS attacks
     maxAge: 24 * 60 * 60 * 1000,                            // 24 hours session timeout
-    sameSite: none                                          // Prevent CSRF attacks
+    sameSite: 'none'                                          // Prevent CSRF attacks
   }
 }))
 
