@@ -79,6 +79,7 @@ const adminlogin = async (req, res) => {
   
   if (password === process.env.ADMIN_PASSWORD) {
     req.session.isAdmin = true;
+
     return res.json({
       success: true,
       message: "Admin login successful"
@@ -95,17 +96,25 @@ const adminLogout = async (req, res) => {
   try {
     req.session.destroy((err) => {
       if (err) {
+        console.log("Session before destroy:", req.session);
         console.error("Error destroying session:", err);
         return res.status(500).json({
           success: false,
           message: "Failed to logout"
         });
       }
-      // res.redirect('/admin/login');
-      res.clearCookie("admin-session");           //made changes here 
-      res.json({ success: true,
-        message:"Logout Successfully!"
-       });
+      console.log("Session destroyed, cookie cleared");
+      res.clearCookie("admin-session", {
+        path: "/",
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+      });
+
+      return res.json({
+        success: true,
+        message: "Logout Successfully!"
+      });
     });
   } catch (error) {
     console.error("Admin logout failed:", error);
@@ -115,6 +124,7 @@ const adminLogout = async (req, res) => {
     });
   }
 };
+
 
 // Get all complaints for admin management
 const getAllComplaintsForAdmin = async (req, res) => {
@@ -215,4 +225,3 @@ const updateComplaintStatusController = async (req, res) => {
 
 module.exports ={submitForm,adminlogin,adminLogout,getAllComplaintsForAdmin,updateComplaintStatusController};
 
-//removed dashboardand complaintsManagementPage

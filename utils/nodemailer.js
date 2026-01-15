@@ -106,7 +106,6 @@ const sendStatusUpdateEmail = async ({ emailId, complaintId, department, natureO
 
 
 //optionall
-
 const sendStatusToTechinician=async({emailId, complaintId, department, natureOfComplaint, roomNo,technician})=>{
   try{
     const transporter=nodemailer.createTransport({
@@ -121,7 +120,7 @@ const sendStatusToTechinician=async({emailId, complaintId, department, natureOfC
       to: technician,
       subject: `New Complaint Assigned | ID: ${complaintId}`,
 
-
+      
       text: `
         New Complaint Assigned
 
@@ -139,9 +138,6 @@ const sendStatusToTechinician=async({emailId, complaintId, department, natureOfC
     throw error;
   }
 } 
-
-
-
 
 
 module.exports = { sendEmail, sendStatusUpdateEmail ,sendStatusToTechinician};
