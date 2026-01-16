@@ -17,7 +17,7 @@ const submitForm = async (req, res) => {
       imageUrl = await uploadToCloudinary(req.file.buffer);
     }
 
-    console.log(imageUrl)
+    console.log("Image url:-",imageUrl)
 
     const allComplaints = await getAllComplaints();
     
@@ -96,14 +96,13 @@ const adminLogout = async (req, res) => {
   try {
     req.session.destroy((err) => {
       if (err) {
-        console.log("Session before destroy:", req.session);
         console.error("Error destroying session:", err);
         return res.status(500).json({
           success: false,
           message: "Failed to logout"
         });
       }
-      console.log("Session destroyed, cookie cleared");
+
       res.clearCookie("admin-session", {
         path: "/",
         httpOnly: true,
