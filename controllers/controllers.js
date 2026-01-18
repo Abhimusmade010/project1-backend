@@ -79,6 +79,7 @@ const adminlogin = async (req, res) => {
   
   if (password === process.env.ADMIN_PASSWORD) {
     req.session.isAdmin = true;
+    console.log("session id:",req.sessionID);
 
     return res.json({
       success: true,
@@ -106,8 +107,10 @@ const adminLogout = async (req, res) => {
       res.clearCookie("admin-session", {
         path: "/",
         httpOnly: true,
-        secure: false,
-        sameSite: "lax",
+        // secure: false,
+        secure: true,
+        sameSite: "none"
+        // sameSite: "lax",
       });
 
       return res.json({
