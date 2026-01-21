@@ -12,6 +12,8 @@ const sendEmail = async ({ emailId, department, natureOfComplaint, roomNo }) => 
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS ,
@@ -51,6 +53,8 @@ const sendStatusUpdateEmail = async ({ emailId, complaintId, department, natureO
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -110,6 +114,8 @@ const sendStatusToTechinician=async({emailId, complaintId, department, natureOfC
   try{
     const transporter=nodemailer.createTransport({
       service:'gmail',
+      port: 587,
+      secure: false,
       auth:{
         user:process.env.EMAIL_USER,
         pass:process.env.EMAIL_PASS,
