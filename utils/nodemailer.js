@@ -18,13 +18,16 @@ const sendEmail = async ({ emailId, department, natureOfComplaint, roomNo }) => 
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS ,
       },
+      tls: {
+          rejectUnauthorized: false, // avoid TLS handshake rejection on render
+      },
     });
 
     const submittedAt = getFormattedDateTime();
     const sheetLink = "https://docs.google.com/spreadsheets/d/1Ma-YVQXEiO8TyJiBh6sCQUSSMkSEN-o_K4wBn-wbK7E";
     
     
-
+    console.log("Attempting to send email to:", process.env.ADMIN_EMAIL);
     await transporter.sendMail({
       from: `"Hardware Management System" <${process.env.EMAIL_USER || "abhishekmusmade342@gmail.com"}>`,
       to: process.env.ADMIN_EMAIL || "musmadesunanda6@gmail.com",
@@ -59,6 +62,9 @@ const sendStatusUpdateEmail = async ({ emailId, complaintId, department, natureO
        
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false, // avoid TLS handshake rejection on render
       },
     });
 
@@ -120,6 +126,9 @@ const sendStatusToTechinician=async({emailId, complaintId, department, natureOfC
       auth:{
         user:process.env.EMAIL_USER,
         pass:process.env.EMAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false, // avoid TLS handshake rejection on render
       },
     });
     await transporter.sendMail({

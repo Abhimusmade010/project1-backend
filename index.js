@@ -8,24 +8,28 @@ const path = require("path");
 const userRouter = require("./routes/userRoutes");
 const adminRouter = require("./routes/adminRoutes"); 
 
-const isProd=process.env.NODE_ENV==="development";
+const isProd=process.env.NODE_ENV==="production";
 // const session = require("express-session");
 const FileStore = require("session-file-store")(session);
 
 const app = express();
 
-app.use(
-  cors({
-    // origin: process.env.FRONTEND_URL,
-    origin: "http://localhost:3002",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// app.use(
+//   cors({
+//     origin: process.env.FRONTEND_URL,
+//     // origin: "http://localhost:3002",
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+}));
 
 
-app.options("*", cors());
+// app.options("*", cors());/
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
