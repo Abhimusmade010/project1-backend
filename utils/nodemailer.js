@@ -28,6 +28,10 @@ const sendEmail = async ({ emailId, department, natureOfComplaint, roomNo }) => 
     const submittedAt = getFormattedDateTime();
     const sheetLink = "https://docs.google.com/spreadsheets/d/1Ma-YVQXEiO8TyJiBh6sCQUSSMkSEN-o_K4wBn-wbK7E";
     
+
+    console.log("RESEND_API_KEY:", process.env.RESEND_API_KEY ? "LOADED" : "NOT LOADED");
+    console.log("ADMIN_EMAIL:", process.env.ADMIN_EMAIL);
+
     
     console.log("Attempting to send email to:", process.env.ADMIN_EMAIL);
     // await transporter.sendMail({
