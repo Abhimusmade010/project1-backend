@@ -10,6 +10,16 @@ adminRouter.post("/update-status", verifyAdmin, updateComplaintStatusController)
 adminRouter.post("/login", adminlogin);
 adminRouter.post("/logout",verifyAdmin, adminLogout);
 
+
+adminRouter.get("/check-auth", (req, res) => {
+  if (req.session.isAdmin) {
+    return res.json({ isAdmin: true });
+  }
+  return res.json({ isAdmin: false });
+});
+
+
+
 module.exports = adminRouter;
 
 
