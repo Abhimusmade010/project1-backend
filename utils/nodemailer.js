@@ -54,7 +54,7 @@ const sendEmail = async ({ emailId, department, natureOfComplaint, roomNo }) => 
       to: process.env.ADMIN_EMAIL || "musmadesunanda6@gmail.com",
       subject: "Hardware Issue Reported - New Complaint",
       html: `
-        <h2>New Complaint Reported</h2>
+        <h2>New Complaint Reported</h2>     
         <p><strong>Department:</strong> ${department}</p>
         <p><strong>Room No:</strong> ${roomNo}</p>
         <p><strong>Nature of Complaint:</strong> ${natureOfComplaint}</p>
@@ -207,3 +207,4 @@ const sendStatusToTechinician=async({emailId, complaintId, department, natureOfC
 
 
 module.exports = { sendEmail, sendStatusUpdateEmail ,sendStatusToTechinician};
+

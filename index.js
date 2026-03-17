@@ -12,24 +12,27 @@ const isProd=process.env.NODE_ENV==="production";
 // const session = require("express-session");
 const FileStore = require("session-file-store")(session);
 
+// console.log("NODE_ENV:", process.env.NODE_ENV);
+// console.log("isProd:", isProd);
+
+
+
 const app = express();
 
-// app.use(
-//   cors({
-//     origin: process.env.FRONTEND_URL,
-//     // origin: "http://localhost:3002",
-//     credentials: true,
-//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//     allowedHeaders: ["Content-Type", "Authorization"],
-//   })
-// );
-app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  credentials: true,
-}));
+app.set('trust proxy', 1);
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    // origin: "http://localhost:3002",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 
-// app.options("*", cors());/
+// app.options("*", cors());
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));

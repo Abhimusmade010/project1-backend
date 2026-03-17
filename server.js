@@ -4,8 +4,6 @@ const rateLimit = require("express-rate-limit");
 const PORT = process.env.PORT || 3000 ;
 const app = require("./index");
 
-app.set('trust proxy', 1);
-
 
 
 // Health check endpoint
@@ -41,7 +39,10 @@ const apiLimiter = rateLimit({
 });
 
 // Apply to all API routes  limits everything 
-app.use(apiLimiter);
+// app.use(apiLimiter);
+
+app.use("/admin", apiLimiter);
+app.use("/user", apiLimiter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
