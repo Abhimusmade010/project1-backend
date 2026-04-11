@@ -6,9 +6,10 @@ const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 const path = require("path");
 const userRouter = require("./routes/userRoutes");
-const adminRouter = require("./routes/adminRoutes"); 
+const adminRouter = require("./routes/adminRoutes");
+const { adminSessionCookieOptions } = require("./config/sessionCookie");
 
-const isProd=process.env.NODE_ENV==="production";
+const isProd = process.env.NODE_ENV === "production";
 // const session = require("express-session");
 const FileStore = require("session-file-store")(session);
 
@@ -23,10 +24,24 @@ const app = express();
 //     allowedHeaders: ["Content-Type", "Authorization"],
 //   })
 // );
-app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  credentials: true,
-}));
+const normalizeOrigin = (u) => (u || "").trim().replace(/\/$/, "");
+const frontendOrigin = normalizeOrigin(process.env.FRONTEND_URL);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      const o = normalizeOrigin(origin);
+      if (frontendOrigin && o === frontendOrigin) return callback(null, true);
+      if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) {
+        return callback(null, true);
+      }
+      if (!isProd) return callback(null, true);
+      return callback(null, false);
+    },
+    credentials: true,
+  })
+);
 
 
 // app.options("*", cors());/
@@ -45,12 +60,7 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: isProd,                         //  MUST be false for HTTP only
-      sameSite: isProd ? "none" : "lax",      // NOT "none" for HTTP
-      maxAge: 24 * 60 * 60 * 1000,
-    },
+    cookie: adminSessionCookieOptions(),
   })
 );
 

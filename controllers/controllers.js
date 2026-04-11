@@ -1,9 +1,22 @@
-const { sendEmail, sendStatusUpdateEmail ,sendStatusToTechinician} = require("../utils/nodemailer");
+const { adminSessionCookieOptions } = require("../config/sessionCookie");
+const {
+  sendEmail,
+  sendStatusUpdateEmail,
+  sendStatusToTechinician,
+} = require("../utils/email");
 const { appendToSheet, getAllComplaints, updateComplaintStatus } = require("../utils/sheet");
 // const {v4: uuid} = require("uuid");
 const { getDashboardStats } = require("../utils/stats");
 const {uploadToCloudinary} =require("../services/uploadService")
 
+
+function isCloudinaryConfigured() {
+  return Boolean(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET
+  );
+}
 
 const submitForm = async (req, res) => {
 
@@ -14,7 +27,22 @@ const submitForm = async (req, res) => {
     let imageUrl = null;
 
     if (req.file) {
-      imageUrl = await uploadToCloudinary(req.file.buffer);
+      if (!isCloudinaryConfigured()) {
+        console.warn(
+          "Complaint submit: image received but CLOUDINARY_* env vars are missing; saving complaint without image URL."
+        );
+      } else {
+        try {
+          imageUrl = await uploadToCloudinary(req.file.buffer);
+        } catch (uploadErr) {
+          console.error("Cloudinary upload failed:", uploadErr);
+          return res.status(500).json({
+            success: false,
+            errors:
+              "Image upload failed. Check Cloudinary credentials in .env or try again without an image.",
+          });
+        }
+      }
     }
 
     console.log("Image url:-",imageUrl)
@@ -35,8 +63,19 @@ const submitForm = async (req, res) => {
 
 
     await appendToSheet({complaintId,natureOfComplaint, department, roomNo, emailId,dsrNo,imageUrl});
-        await sendEmail({ complaintId,emailId,department,natureOfComplaint,roomNo,imageUrl});
-    
+
+    let emailSent = false;
+    try {
+      await sendEmail({ complaintId, emailId, department, natureOfComplaint, roomNo, imageUrl });
+      emailSent = true;
+    } catch (emailErr) {
+      // Details logged in utils/email.js (Brevo API)
+      console.error(
+        "Admin notification email failed (complaint was still saved):",
+        emailErr?.message || emailErr
+      );
+    }
+
     res.status(200).json({ 
       success: true,
       message: "Complaint submitted successfully!",
@@ -46,7 +85,8 @@ const submitForm = async (req, res) => {
         roomNo,
         submittedAt: new Date().toISOString(),
         dsrNo,
-        imageUrl
+        imageUrl,
+        emailSent,
       }
     });
     
@@ -60,10 +100,14 @@ const submitForm = async (req, res) => {
       });
     }
     
-    if (errors.code === 'EAUTH') {
-      return res.status(500).json({ 
+    if (
+      errors.code === "EAUTH" ||
+      errors.code === "EBREVO" ||
+      errors.code === "EMISSING"
+    ) {
+      return res.status(500).json({
         success: false,
-        errors: "Email service configuration error"
+        errors: "Email service configuration error (check Brevo API key and sender)",
       });
     }
     
@@ -72,6 +116,10 @@ const submitForm = async (req, res) => {
       errors: "Failed to submit complaint. Please try again later."
     });
   }
+};
+
+const checkAdminAuth = (req, res) => {
+  res.json({ isAdmin: Boolean(req.session && req.session.isAdmin) });
 };
 
 const adminlogin = async (req, res) => {
@@ -104,13 +152,12 @@ const adminLogout = async (req, res) => {
         });
       }
 
+      const cookieOpts = adminSessionCookieOptions();
       res.clearCookie("admin-session", {
         path: "/",
-        httpOnly: true,
-        // secure: false,
-        secure: true,
-        sameSite: "none"
-        // sameSite: "lax",
+        httpOnly: cookieOpts.httpOnly,
+        secure: cookieOpts.secure,
+        sameSite: cookieOpts.sameSite,
       });
 
       return res.json({
@@ -225,5 +272,12 @@ const updateComplaintStatusController = async (req, res) => {
   }
 };
 
-module.exports ={submitForm,adminlogin,adminLogout,getAllComplaintsForAdmin,updateComplaintStatusController};
+module.exports = {
+  submitForm,
+  checkAdminAuth,
+  adminlogin,
+  adminLogout,
+  getAllComplaintsForAdmin,
+  updateComplaintStatusController,
+};
 
