@@ -5,7 +5,7 @@ const rateLimit = require("express-rate-limit");
 const PORT = process.env.PORT || 3000 ;
 const app = require("./index");
 
-app.set('trust proxy', 1);
+// app.set('trust proxy', 1); (moved to index.js)
 
 
 

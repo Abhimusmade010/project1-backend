@@ -9,9 +9,14 @@ const userRouter = require("./routes/userRoutes");
 const adminRouter = require("./routes/adminRoutes");
 const { adminSessionCookieOptions } = require("./config/sessionCookie");
 
+const app = express();
+app.set('trust proxy', 1);
 const isProd = process.env.NODE_ENV === "production";
 
-const app = express();
+if (isProd) {
+  console.log("🚀 Production mode detected. Trust Proxy enabled.");
+  console.log("Frontend URL configured as:", process.env.FRONTEND_URL);
+}
 
 // app.use(
 //   cors({
@@ -30,7 +35,14 @@ app.use(
     origin(origin, callback) {
       if (!origin) return callback(null, true);
       const o = normalizeOrigin(origin);
-      if (frontendOrigin && o === frontendOrigin) return callback(null, true);
+      const f = frontendOrigin;
+      const matched = f && o === f;
+      
+      if (!matched && isProd) {
+        console.warn(`⚠️ CORS mismatch: Received [${o}] but expected [${f}]`);
+      }
+      
+      if (matched) return callback(null, true);
       if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) {
         return callback(null, true);
       }
