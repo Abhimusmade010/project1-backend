@@ -127,7 +127,7 @@ const adminlogin = async (req, res) => {
   
   if (password === process.env.ADMIN_PASSWORD) {
     req.session.isAdmin = true;
-    console.log("session id:",req.sessionID);
+    console.log("✅ Admin login successful. Session initialized.");
 
     return res.json({
       success: true,

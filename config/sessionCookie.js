@@ -11,11 +11,16 @@ function useSecureSessionCookie() {
 
 function adminSessionCookieOptions() {
   const secure = useSecureSessionCookie();
+  const isProd = process.env.NODE_ENV === "production";
+
   return {
     httpOnly: true,
     secure,
     sameSite: secure ? "none" : "lax",
     maxAge: 24 * 60 * 60 * 1000,
+    // Partitioned cookies (CHIPS) are necessary for 3rd-party contexts (Vercel -> Render)
+    // when browsers have tracking protection/3rd-party cookie blocking enabled.
+    partitioned: secure, 
   };
 }
 
