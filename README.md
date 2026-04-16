@@ -18,7 +18,7 @@ A Node.js/Express-based system for managing hardware complaints in educational i
 - Node.js (v14 or higher)
 - npm or yarn
 - Google Cloud Platform account
-- Gmail account for email notifications
+- [Brevo](https://www.brevo.com) account (free tier) for transactional email
 
 ## 🛠️ Installation
 
@@ -42,9 +42,10 @@ A Node.js/Express-based system for managing hardware complaints in educational i
    # Google Sheets Configuration
    SPREADSHEET_ID=your_google_sheet_id
    
-   # Email Configuration
-EMAIL_USER=your_gmail@gmail.com
-EMAIL_PASS=your_app_password
+   # Email (Brevo REST API)
+BREVO_API_KEY=your_brevo_v3_api_key
+BREVO_SENDER_EMAIL=verified-sender@yourdomain.com
+BREVO_SENDER_NAME=Hardware Management System
 ADMIN_EMAIL=admin@college.edu
 
 # Admin Authentication
@@ -60,10 +61,9 @@ SESSION_SECRET=your-super-secret-session-key-here
    - Download the credentials JSON file
    - Place it as `utils/credentials.json`
 
-5. **Set up Gmail App Password**
-   - Enable 2-factor authentication on your Gmail account
-   - Generate an app password
-   - Use this password in your `.env` file
+5. **Set up Brevo email**
+   - Create an API key (SMTP & API → API keys) and add `BREVO_API_KEY` to `.env`
+   - Add and verify a sender under **Senders**; use that address as `BREVO_SENDER_EMAIL`
 
 ## 🚀 Usage
 
@@ -162,7 +162,7 @@ Complaint/
 ├── routes/
 │   └── routes.js          # API routes
 ├── utils/
-│   ├── nodemailer.js      # Email functionality
+│   ├── email.js           # Brevo transactional email (REST API)
 │   ├── sheet.js           # Google Sheets integration
 │   └── credentials.json   # Google API credentials
 ├── validations/
@@ -192,8 +192,7 @@ Complaint/
 2. Share the sheet with your service account email
 
 ### Email Configuration
-- Use Gmail with app passwords (not regular passwords)
-- Ensure the admin email is correctly set in environment variables
+- Use Brevo (`BREVO_API_KEY`, `BREVO_SENDER_EMAIL`); `ADMIN_EMAIL` receives new-complaint alerts
 
 ## 🛡️ Security Features
 
@@ -220,9 +219,9 @@ Complaint/
    - Ensure `utils/credentials.json` exists
    - Check file permissions
 
-2. **"EAUTH" email errors**
-   - Verify Gmail app password is correct
-   - Check 2-factor authentication is enabled
+2. **Email not sending (Brevo)**
+   - Confirm `BREVO_API_KEY` and `BREVO_SENDER_EMAIL` are set and the sender is verified in Brevo
+   - Check server logs for `Brevo error` and HTTP status (401 = bad key, 400 = invalid sender)
 
 3. **Google Sheets access denied**
    - Verify service account has access to the sheet

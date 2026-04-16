@@ -1,15 +1,5 @@
 const { google } = require("googleapis");
-const path = require("path");
-const dotenv =require("dotenv");
-dotenv.config();
-
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-  },
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-});
+const { auth } = require("./googleSheetsAuth");
 
 const appendToSheet = async ({ complaintId,natureOfComplaint, department, roomNo,emailId,dsrNo,imageUrl}) => {
   try{const client = await auth.getClient();

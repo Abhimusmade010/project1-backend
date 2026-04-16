@@ -1,9 +1,22 @@
-const { sendEmail, sendStatusUpdateEmail ,sendStatusToTechinician} = require("../utils/nodemailer");
+const { adminSessionCookieOptions } = require("../config/sessionCookie");
+const {
+  sendEmail,
+  sendStatusUpdateEmail,
+  sendStatusToTechinician,
+} = require("../utils/email");
 const { appendToSheet, getAllComplaints, updateComplaintStatus } = require("../utils/sheet");
 // const {v4: uuid} = require("uuid");
 const { getDashboardStats } = require("../utils/stats");
 const {uploadToCloudinary} =require("../services/uploadService")
 
+
+function isCloudinaryConfigured() {
+  return Boolean(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET
+  );
+}
 
 const submitForm = async (req, res) => {
 
@@ -14,10 +27,25 @@ const submitForm = async (req, res) => {
     let imageUrl = null;
 
     if (req.file) {
-      imageUrl = await uploadToCloudinary(req.file.buffer);
+      if (!isCloudinaryConfigured()) {
+        console.warn(
+          "Complaint submit: image received but CLOUDINARY_* env vars are missing; saving complaint without image URL."
+        );
+      } else {
+        try {
+          imageUrl = await uploadToCloudinary(req.file.buffer);
+        } catch (uploadErr) {
+          console.error("Cloudinary upload failed:", uploadErr);
+          return res.status(500).json({
+            success: false,
+            errors:
+              "Image upload failed. Check Cloudinary credentials in .env or try again without an image.",
+          });
+        }
+      }
     }
 
-    console.log(imageUrl)
+    console.log("Image url:-",imageUrl)
 
     const allComplaints = await getAllComplaints();
     
@@ -35,8 +63,19 @@ const submitForm = async (req, res) => {
 
 
     await appendToSheet({complaintId,natureOfComplaint, department, roomNo, emailId,dsrNo,imageUrl});
-        await sendEmail({ complaintId,emailId,department,natureOfComplaint,roomNo,imageUrl});
-    
+
+    let emailSent = false;
+    try {
+      await sendEmail({ complaintId, emailId, department, natureOfComplaint, roomNo, imageUrl });
+      emailSent = true;
+    } catch (emailErr) {
+      // Details logged in utils/email.js (Brevo API)
+      console.error(
+        "Admin notification email failed (complaint was still saved):",
+        emailErr?.message || emailErr
+      );
+    }
+
     res.status(200).json({ 
       success: true,
       message: "Complaint submitted successfully!",
@@ -46,7 +85,8 @@ const submitForm = async (req, res) => {
         roomNo,
         submittedAt: new Date().toISOString(),
         dsrNo,
-        imageUrl
+        imageUrl,
+        emailSent,
       }
     });
     
@@ -60,10 +100,14 @@ const submitForm = async (req, res) => {
       });
     }
     
-    if (errors.code === 'EAUTH') {
-      return res.status(500).json({ 
+    if (
+      errors.code === "EAUTH" ||
+      errors.code === "EBREVO" ||
+      errors.code === "EMISSING"
+    ) {
+      return res.status(500).json({
         success: false,
-        errors: "Email service configuration error"
+        errors: "Email service configuration error (check Brevo API key and sender)",
       });
     }
     
@@ -74,11 +118,17 @@ const submitForm = async (req, res) => {
   }
 };
 
+const checkAdminAuth = (req, res) => {
+  res.json({ isAdmin: Boolean(req.session && req.session.isAdmin) });
+};
+
 const adminlogin = async (req, res) => {
   const { password } = req.body;
   
   if (password === process.env.ADMIN_PASSWORD) {
     req.session.isAdmin = true;
+    console.log("session id:",req.sessionID);
+
     return res.json({
       success: true,
       message: "Admin login successful"
@@ -101,11 +151,19 @@ const adminLogout = async (req, res) => {
           message: "Failed to logout"
         });
       }
-      // res.redirect('/admin/login');
-      res.clearCookie("admin-session");           //made changes here 
-      res.json({ success: true,
-        message:"Logout Successfully!"
-       });
+
+      const cookieOpts = adminSessionCookieOptions();
+      res.clearCookie("admin-session", {
+        path: "/",
+        httpOnly: cookieOpts.httpOnly,
+        secure: cookieOpts.secure,
+        sameSite: cookieOpts.sameSite,
+      });
+
+      return res.json({
+        success: true,
+        message: "Logout Successfully!"
+      });
     });
   } catch (error) {
     console.error("Admin logout failed:", error);
@@ -115,6 +173,7 @@ const adminLogout = async (req, res) => {
     });
   }
 };
+
 
 // Get all complaints for admin management
 const getAllComplaintsForAdmin = async (req, res) => {
@@ -213,6 +272,12 @@ const updateComplaintStatusController = async (req, res) => {
   }
 };
 
-module.exports ={submitForm,adminlogin,adminLogout,getAllComplaintsForAdmin,updateComplaintStatusController};
+module.exports = {
+  submitForm,
+  checkAdminAuth,
+  adminlogin,
+  adminLogout,
+  getAllComplaintsForAdmin,
+  updateComplaintStatusController,
+};
 
-//removed dashboardand complaintsManagementPage

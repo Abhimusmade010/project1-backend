@@ -6,46 +6,65 @@ const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 const path = require("path");
 const userRouter = require("./routes/userRoutes");
-const adminRouter = require("./routes/adminRoutes"); 
+const adminRouter = require("./routes/adminRoutes");
+const { adminSessionCookieOptions } = require("./config/sessionCookie");
+
+const isProd = process.env.NODE_ENV === "production";
+// const session = require("express-session");
+const FileStore = require("session-file-store")(session);
 
 const app = express();
 
-// const allowedOrigins =
-//   process.env.NODE_ENV === "production"
-//     ? [process.env.FRONTEND_URL]
-//     : ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"];
-
-// app.use(cors({
-//   origin: allowedOrigins,
-//   credentials: true,
-// }));
+// app.use(
+//   cors({
+//     origin: process.env.FRONTEND_URL,
+//     // origin: "http://localhost:3002",
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
+const normalizeOrigin = (u) => (u || "").trim().replace(/\/$/, "");
+const frontendOrigin = normalizeOrigin(process.env.FRONTEND_URL);
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      const o = normalizeOrigin(origin);
+      if (frontendOrigin && o === frontendOrigin) return callback(null, true);
+      if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) {
+        return callback(null, true);
+      }
+      if (!isProd) return callback(null, true);
+      return callback(null, false);
+    },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-/* ✅ allow preflight explicitly */
-app.options("*", cors());
+
+// app.options("*", cors());/
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
-app.use(session({
-  secret:process.env.SESSION_SECRET || "mycustomsessionkey",
-  resave:false,
-  saveUninitialized:false,
-  cookie:{
-    secure: process.env.NODE_ENV === 'production',          // Use secure cookies in production
-    httpOnly: true,                                         // Prevent XSS attacks
-    maxAge: 24 * 60 * 60 * 1000,                            // 24 hours session timeout
-    sameSite: 'none'                                          // Prevent CSRF attacks
-  }
-}))
+
+app.use(
+  session({
+    name: "admin-session",
+    store: new FileStore({
+      path: "./sessions",
+      retries: 0,
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: adminSessionCookieOptions(),
+  })
+);
+
+
 
 app.use("/user", userRouter);
 app.use("/admin", adminRouter);

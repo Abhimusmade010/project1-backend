@@ -2,6 +2,7 @@
 node_modules/
 package-lock.json
 
+sessions/
 # Environment variables
 .env
 .env.local
@@ -99,3 +100,4 @@ Thumbs.db
 utils/credentials.json
 *.pem
 *.key
+
