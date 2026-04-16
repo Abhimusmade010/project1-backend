@@ -7,7 +7,8 @@ const {
 const { appendToSheet, getAllComplaints, updateComplaintStatus } = require("../utils/sheet");
 // const {v4: uuid} = require("uuid");
 const { getDashboardStats } = require("../utils/stats");
-const {uploadToCloudinary} =require("../services/uploadService")
+const {uploadToCloudinary} =require("../services/uploadService");
+const jwt = require("jsonwebtoken");
 
 
 function isCloudinaryConfigured() {
@@ -64,17 +65,10 @@ const submitForm = async (req, res) => {
 
     await appendToSheet({complaintId,natureOfComplaint, department, roomNo, emailId,dsrNo,imageUrl});
 
-    let emailSent = false;
-    try {
-      await sendEmail({ complaintId, emailId, department, natureOfComplaint, roomNo, imageUrl });
-      emailSent = true;
-    } catch (emailErr) {
-      // Details logged in utils/email.js (Brevo API)
-      console.error(
-        "Admin notification email failed (complaint was still saved):",
-        emailErr?.message || emailErr
-      );
-    }
+    // Send email notification to admin (NON-BLOCKING to prevent timeouts)
+    sendEmail({ complaintId, emailId, department, natureOfComplaint, roomNo, imageUrl })
+      .then(() => console.log(`Email sent for ${complaintId}`))
+      .catch(err => console.error(`Email failed for ${complaintId}:`, err.message));
 
     res.status(200).json({ 
       success: true,
@@ -85,8 +79,7 @@ const submitForm = async (req, res) => {
         roomNo,
         submittedAt: new Date().toISOString(),
         dsrNo,
-        imageUrl,
-        emailSent,
+        imageUrl
       }
     });
     
@@ -126,12 +119,18 @@ const adminlogin = async (req, res) => {
   const { password } = req.body;
   
   if (password === process.env.ADMIN_PASSWORD) {
-    req.session.isAdmin = true;
-    console.log("✅ Admin login successful. Session initialized.");
+    const token = jwt.sign(
+      { isAdmin: true },
+      process.env.SESSION_SECRET || "default_secret_key",
+      { expiresIn: "24h" }
+    );
+
+    console.log("✅ Admin login successful. JWT generated.");
 
     return res.json({
       success: true,
-      message: "Admin login successful"
+      message: "Admin login successful",
+      token: token
     });
   }
 
@@ -142,28 +141,11 @@ const adminlogin = async (req, res) => {
 };
 
 const adminLogout = async (req, res) => {
-  try {
-    req.session = null; // Clears the session cookie
-
-    const cookieOpts = adminSessionCookieOptions();
-    res.clearCookie("admin-session", {
-      path: "/",
-      httpOnly: cookieOpts.httpOnly,
-      secure: cookieOpts.secure,
-      sameSite: cookieOpts.sameSite,
-    });
-
-    return res.json({
-      success: true,
-      message: "Logout Successfully!"
-    });
-  } catch (error) {
-    console.error("Admin logout failed:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to logout"
-    });
-  }
+  // Stateless JWT doesn't need server-side logout, just clear local state on frontend
+  return res.json({
+    success: true,
+    message: "Logout Successfully! (Local token cleared)"
+  });
 };
 
 

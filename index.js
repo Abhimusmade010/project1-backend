@@ -1,5 +1,4 @@
 const express = require("express");
-const session = require("cookie-session");
 const dotenv = require("dotenv");
 dotenv.config();
 const rateLimit = require("express-rate-limit");
@@ -7,7 +6,6 @@ const cors = require("cors");
 const path = require("path");
 const userRouter = require("./routes/userRoutes");
 const adminRouter = require("./routes/adminRoutes");
-const { adminSessionCookieOptions } = require("./config/sessionCookie");
 
 const app = express();
 app.set('trust proxy', 1);
@@ -50,6 +48,7 @@ app.use(
       return callback(null, false);
     },
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -59,13 +58,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
 
-app.use(
-  session({
-    name: "admin-session",
-    keys: [process.env.SESSION_SECRET || "default_secret_key"],
-    ...adminSessionCookieOptions(),
-  })
-);
+// Stateless JWT authentication (no session middleware needed)
 
 
 
