@@ -143,27 +143,19 @@ const adminlogin = async (req, res) => {
 
 const adminLogout = async (req, res) => {
   try {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error("Error destroying session:", err);
-        return res.status(500).json({
-          success: false,
-          message: "Failed to logout"
-        });
-      }
+    req.session = null; // Clears the session cookie
 
-      const cookieOpts = adminSessionCookieOptions();
-      res.clearCookie("admin-session", {
-        path: "/",
-        httpOnly: cookieOpts.httpOnly,
-        secure: cookieOpts.secure,
-        sameSite: cookieOpts.sameSite,
-      });
+    const cookieOpts = adminSessionCookieOptions();
+    res.clearCookie("admin-session", {
+      path: "/",
+      httpOnly: cookieOpts.httpOnly,
+      secure: cookieOpts.secure,
+      sameSite: cookieOpts.sameSite,
+    });
 
-      return res.json({
-        success: true,
-        message: "Logout Successfully!"
-      });
+    return res.json({
+      success: true,
+      message: "Logout Successfully!"
     });
   } catch (error) {
     console.error("Admin logout failed:", error);

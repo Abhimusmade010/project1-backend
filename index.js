@@ -1,7 +1,7 @@
 const express = require("express");
+const session = require("cookie-session");
 const dotenv = require("dotenv");
 dotenv.config();
-const session=require("express-session");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 const path = require("path");
@@ -10,8 +10,6 @@ const adminRouter = require("./routes/adminRoutes");
 const { adminSessionCookieOptions } = require("./config/sessionCookie");
 
 const isProd = process.env.NODE_ENV === "production";
-// const session = require("express-session");
-const FileStore = require("session-file-store")(session);
 
 const app = express();
 
@@ -53,14 +51,8 @@ app.use(express.urlencoded({extended:true}));
 app.use(
   session({
     name: "admin-session",
-    store: new FileStore({
-      path: "./sessions",
-      retries: 0,
-    }),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: adminSessionCookieOptions(),
+    keys: [process.env.SESSION_SECRET || "default_secret_key"],
+    ...adminSessionCookieOptions(),
   })
 );
 
